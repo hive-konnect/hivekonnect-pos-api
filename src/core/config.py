@@ -28,7 +28,13 @@ class Settings(BaseSettings):
 
     @property
     def backend_cors_origins_list(self) -> list[str]:
-        return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
+        origins = [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
+        production_frontend = "https://pos.hivekonnect.org"
+
+        if self.ENVIRONMENT.lower() == "production" and production_frontend not in origins:
+            origins.append(production_frontend)
+
+        return origins
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
@@ -48,6 +54,5 @@ class Settings(BaseSettings):
     SMTP_USER: str | None = None
     SMTP_PASSWORD: str | None = None
     EMAIL_FROM: str | None = None
-
 
 settings = Settings()   
