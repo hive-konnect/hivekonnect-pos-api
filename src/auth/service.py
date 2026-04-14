@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+
 from . import models, utils
 
 
@@ -38,3 +39,11 @@ def authenticate_user(db: Session, email: str, password: str):
         return None
 
     return user
+
+def authenticate_and_issue_token(db: Session, *, email: str, password: str) -> dict[str, str]:
+    db_user = authenticate_user(db, email, password)
+    if not db_user:
+        raise ValueError("Invalid email or password")
+
+    access_token = utils.create_token({"user_id": db_user.id})
+    return {"access_token": access_token, "token_type": "bearer"}

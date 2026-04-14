@@ -28,30 +28,14 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=schemas.TokenResponse)
 def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    db_user = service.authenticate_user(db, user.email, user.password)
-
-    if not db_user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    token = utils.create_token({"user_id": db_user.id})
-    return {"access_token": token, "token_type": "bearer"}
+    return service.authenticate_and_issue_token(db, email=user.email, password=user.password)
 
 
 @router.post("/token", response_model=schemas.TokenResponse)
 def token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    db_user = service.authenticate_user(db, form_data.username, form_data.password)
-
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    access_token = utils.create_token({"user_id": db_user.id})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return service.authenticate_and_issue_token(db, email=form_data.username, password=form_data.password)
 
 
 @router.get("/me", response_model=schemas.UserResponse)
-def me(current_user=Depends(dependencies.get_current_user)):
+def me(current_user: dependencies.CurrentUser):
     return current_user

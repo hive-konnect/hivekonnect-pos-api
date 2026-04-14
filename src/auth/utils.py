@@ -6,7 +6,7 @@ import jwt
 
 from src.core.config import settings
 
-BCRYPT_MAX_PASSWORD_BYTES = 72
+# BCRYPT_MAX_PASSWORD_BYTES = 72
 
 
 def _normalize_jwt_payload(value):
@@ -25,14 +25,14 @@ def _password_byte_length(password: str) -> int:
     return len(password.encode("utf-8"))
 
 def hash_password(password: str):
-    if _password_byte_length(password) > BCRYPT_MAX_PASSWORD_BYTES:
-        raise ValueError("Password is too long. Please use 72 bytes or fewer.")
+    # if _password_byte_length(password) > BCRYPT_MAX_PASSWORD_BYTES:
+    #     raise ValueError("Password is too long. Please use 72 bytes or fewer.")
     password_bytes = password.encode("utf-8")
     return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("utf-8")
 
 def verify_password(plain, hashed):
-    if _password_byte_length(plain) > BCRYPT_MAX_PASSWORD_BYTES:
-        return False
+    # if _password_byte_length(plain) > BCRYPT_MAX_PASSWORD_BYTES:
+    #     return False
     try:
         return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
     except (ValueError, TypeError):

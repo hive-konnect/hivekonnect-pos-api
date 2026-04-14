@@ -4,12 +4,13 @@ from jwt import InvalidTokenError
 from sqlalchemy.orm import Session
 from typing import Annotated
 
+from src.core.config import settings
 from src.core.database import get_db
 
 from .models import User
 from .utils import decode_token
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
 
 
 def get_current_user(
