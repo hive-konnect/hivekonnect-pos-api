@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from sqlalchemy.orm import Session
+from typing import Annotated
 
 from src.core.database import get_db
 
@@ -37,3 +38,6 @@ def get_current_user(
         )
 
     return user
+
+CurrentUser = Annotated[User, Depends(get_current_user)]
+
