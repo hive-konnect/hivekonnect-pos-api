@@ -10,8 +10,8 @@ from src.core.database import engine, init_db
 
 # Create FastAPI instance
 app = FastAPI(
-    title="My API",
-    description="Starter FastAPI application",
+    title=settings.PROJECT_NAME,
+    description=settings.PROJECT_DESCRIPTION,
     version="1.0.0"
 )
 

@@ -1,22 +1,28 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", env_file_encoding="utf-8", extra="ignore")
 
     # App
-    PROJECT_NAME: str = "My App"
-    API_V1_STR: str = "/api/v1"
-    ENVIRONMENT: str = "local"
-    TOKEN_ALGORITHM: str = "HS256"
+    PROJECT_NAME: str
+    PROJECT_DESCRIPTION: str
+    API_V1_STR: str
+    ENVIRONMENT: str
+    TOKEN_ALGORITHM: str
 
     # Security
     SECRET_KEY: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
 
     # Frontend
-    FRONTEND_HOST: str = "http://localhost:5173"
-    BACKEND_CORS_ORIGINS: str = "http://localhost:5173"
+    FRONTEND_HOST: str
+    BACKEND_CORS_ORIGINS: str
 
     # Database
     DATABASE_URL: str | None = None
@@ -24,22 +30,11 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
-    POSTGRES_PORT: int = 5432
+    POSTGRES_PORT: int
 
     @property
     def backend_cors_origins_list(self) -> list[str]:
-        parsed = [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
-        defaults = [self.FRONTEND_HOST]
-
-        if self.ENVIRONMENT.lower() == "production":
-            defaults.append("https://pos.hivekonnect.org")
-
-        origins: list[str] = []
-        for origin in [*parsed, *defaults]:
-            if origin and origin not in origins:
-                origins.append(origin)
-
-        return origins
+        return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
