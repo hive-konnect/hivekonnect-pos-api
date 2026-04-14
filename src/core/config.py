@@ -29,7 +29,10 @@ class Settings(BaseSettings):
     @property
     def backend_cors_origins_list(self) -> list[str]:
         parsed = [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
-        defaults = [self.FRONTEND_HOST, "https://pos.hivekonnect.org"]
+        defaults = [self.FRONTEND_HOST]
+
+        if self.ENVIRONMENT.lower() == "production":
+            defaults.append("https://pos.hivekonnect.org")
 
         origins: list[str] = []
         for origin in [*parsed, *defaults]:

@@ -33,7 +33,7 @@ def on_startup() -> None:
 def read_root():
     return {"message": "Hello World"}
 
-app.include_router(auth_router)
+app.include_router(auth_router, prefix=settings.API_V1_STR)
 # Health check endpoint (useful for deployments)
 @app.get("/health")
 def health_check():
