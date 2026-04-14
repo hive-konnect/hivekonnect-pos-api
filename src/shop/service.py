@@ -1,23 +1,17 @@
-from pydantic import BaseModel, Field
-from uuid import UUID
+from .models import Shop
+from sqlalchemy.orm import Session
 
-class ShopCreate(BaseModel):
-    shop_name: str = Field(..., max_length=255)
-    shop_type: str = Field("General", max_length=100)
-    description: str = Field(None, max_length=500)
-    address: str = Field(None, max_length=255)
-    business_phone_number: str = Field(None, max_length=20)
-    currency: str = Field("UGX", max_length=10)
 
-class ShopResponse(BaseModel):
-    
-    shop_name: str
-    shop_type: str
-    description: str = None
-    address: str = None
-    business_phone_number: str = None
-    currency: str
-
-    class Config:
-        from_attributes = True
-
+def create_shop(db: Session, owner_id: str, shop_name: str, shop_type: str = "General", description: str = None, address: str = None, business_phone_number: str = None):
+    shop = Shop(
+        shop_name=shop_name,
+        shop_type=shop_type,
+        description=description,
+        address=address,
+        business_phone_number=business_phone_number,
+        owner_id=owner_id
+    )
+    db.add(shop)
+    db.commit()
+    db.refresh(shop)
+    return shop

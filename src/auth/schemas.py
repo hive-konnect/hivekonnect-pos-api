@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from uuid import UUID
 
 class UserCreate(BaseModel):
     first_name: str
@@ -16,7 +17,7 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 class UserResponse(BaseModel):
-    id: int
+    id: UUID    
     first_name: str
     last_name: str
     email: EmailStr
