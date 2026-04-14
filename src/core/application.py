@@ -26,7 +26,7 @@ def create_app() -> FastAPI:
     def on_startup() -> None:
         init_db()
 
-    app.include_router(core_router)
+    app.include_router(core_router, prefix=settings.API_V1_STR)
     app.include_router(api_router, prefix=settings.API_V1_STR)
 
     return app
