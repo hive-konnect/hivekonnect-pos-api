@@ -1,44 +1,67 @@
-from fastapi import Depends, HTTPException, status
+from typing import Annotated
+
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from sqlalchemy.orm import Session
-from typing import Annotated
 
 from src.core.config import settings
 from src.core.database import get_db
+from src.core.errors import UnauthorizedError
+from src.staff.models import Staff
 
 from .models import User
 from .utils import decode_token
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
 
-def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> User:
+def get_token_payload(token: str = Depends(oauth2_scheme)) -> dict:
     try:
         payload = decode_token(token)
-        user_id = payload.get("user_id")
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload",
-            )
     except InvalidTokenError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-        ) from exc
+        raise UnauthorizedError("Invalid token") from exc
 
-    user = db.query(User).filter(User.id == user_id).first()
+    if payload.get("token_use") != "access":
+        raise UnauthorizedError("Access token required")
+
+    return payload
+
+
+def get_current_owner(
+    payload: dict = Depends(get_token_payload),
+    db: Session = Depends(get_db),
+) -> User:
+    if payload.get("type") != "owner":
+        raise UnauthorizedError("Owner token required")
+
+    user_id = payload.get("user_id")
+    if not user_id:
+        raise UnauthorizedError("Invalid token payload")
+
+    user = db.query(User).filter(User.id == user_id, User.is_active.is_(True)).first()
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-        )
-
+        raise UnauthorizedError("User not found or disabled")
     return user
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
 
+def get_current_staff(
+    payload: dict = Depends(get_token_payload),
+    db: Session = Depends(get_db),
+) -> Staff:
+    if payload.get("type") != "staff":
+        raise UnauthorizedError("Staff token required")
+
+    staff_id = payload.get("staff_id")
+    if not staff_id:
+        raise UnauthorizedError("Invalid token payload")
+
+    staff = db.query(Staff).filter(Staff.id == staff_id, Staff.is_active.is_(True)).first()
+    if staff is None:
+        raise UnauthorizedError("Staff not found or disabled")
+    return staff
+
+
+CurrentOwner = Annotated[User, Depends(get_current_owner)]
+CurrentStaff = Annotated[Staff, Depends(get_current_staff)]
+CurrentUser = CurrentOwner

@@ -1,39 +1,42 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from . import schemas, service, utils, dependencies
 from src.core.database import get_db
+
+from . import dependencies, schemas, service
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/register", response_model=schemas.UserResponse)
+@router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    try:
-        db_user = service.create_user(
-            db,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            email=user.email,
-            password=user.password,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    if db_user is None:
-        raise HTTPException(status_code=400, detail="User already exists")
-    return db_user
+    return service.create_user(
+        db,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        password=user.password,
+    )
 
 
 @router.post("/login", response_model=schemas.TokenResponse)
 def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    return service.authenticate_and_issue_token(db, email=user.email, password=user.password)
+    return service.authenticate_and_issue_owner_token(db, email=user.email, password=user.password)
 
 
-@router.post("/token", response_model=schemas.TokenResponse)
-def token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    return service.authenticate_and_issue_token(db, email=form_data.username, password=form_data.password)
+@router.post("/refresh", response_model=schemas.TokenResponse)
+def refresh_token(payload: schemas.RefreshTokenRequest, db: Session = Depends(get_db)):
+    return service.issue_owner_access_from_refresh(db, refresh_token=payload.refresh_token)
+
+
+@router.post("/pin-login", response_model=schemas.TokenResponse)
+def pin_login(payload: schemas.PinLoginRequest, db: Session = Depends(get_db)):
+    return service.authenticate_staff_by_pin_and_issue_token(db, shop_id=payload.shop_id, pin=payload.pin)
+
+
+@router.post("/logout", response_model=schemas.LogoutResponse)
+def logout(_: dict = Depends(dependencies.get_token_payload)):
+    return {"message": "Logged out"}
 
 
 @router.get("/me", response_model=schemas.UserResponse)

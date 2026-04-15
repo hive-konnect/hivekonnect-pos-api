@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Boolean, text
+from sqlalchemy import Boolean, Column, DateTime, String, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -20,9 +20,8 @@ class User(Base):
     
     hashed_password = Column(String, nullable=False)
 
-    is_active = Column(Boolean, server_default=text("true"))
+    is_active = Column(Boolean, nullable=False, server_default=text("true"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     shops = relationship("Shop", back_populates="owner", cascade="all, delete-orphan")
-    staff_memberships = relationship("Staff", back_populates="user", cascade="all, delete")
