@@ -14,9 +14,9 @@ class User(Base):
     
     
     email = Column(String(255), unique=True, index=True, nullable=False)
-    phone_number = Column(String(20), nullable=True)
+    phone_number = Column(String(20), nullable=False)
 
-    username = Column(String(255), unique=True, index=True, nullable=True)  # Optional username field
+
     
     hashed_password = Column(String, nullable=False)
 

@@ -17,9 +17,10 @@ def create_shop(shop: schemas.ShopCreate, current_user: CurrentOwner, db: Sessio
         owner_id=current_user.id,
         shop_name=shop.shop_name,
         shop_type=shop.shop_type,
-        description=shop.description,
+
         address=shop.address,
-        business_phone_number=shop.business_phone_number,
+        phone_number=shop.phone_number,
+        alternate_phone_number=shop.alternate_phone_number,
         currency=shop.currency,
     )
 

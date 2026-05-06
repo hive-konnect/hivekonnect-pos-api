@@ -14,6 +14,7 @@ def create_user(
     first_name: str,
     last_name: str,
     email: str,
+    phone_number: str,
     password: str,
 ) -> models.User:
     normalized_email = email.lower().strip()
@@ -25,6 +26,7 @@ def create_user(
         first_name=first_name.strip(),
         last_name=last_name.strip(),
         email=normalized_email,
+        phone_number=phone_number.strip(),
         hashed_password=utils.hash_password(password),
     )
     db.add(user)
@@ -37,7 +39,7 @@ def authenticate_user(db: Session, email: str, password: str) -> models.User | N
     normalized_email = email.lower().strip()
     user = db.query(models.User).filter(models.User.email == normalized_email).first()
     if not user:
-        return None
+        return Exception("User not found")
     if not utils.verify_password(password, user.hashed_password):
         return None
     return user

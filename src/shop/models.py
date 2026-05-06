@@ -12,9 +12,11 @@ class Shop(Base):
     shop_name = Column(String(255), nullable=False)
     shop_type = Column(String(100), server_default="General")
     
-    description = Column(String(500))
+
     address = Column(String(255))
-    business_phone_number = Column(String(20))
+    phone_number = Column(String(20))
+
+    alternate_phone_number = Column(String(20))
     
     currency = Column(String(10), server_default="UGX")
 

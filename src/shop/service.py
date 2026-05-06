@@ -8,17 +8,19 @@ def create_shop(
     owner_id: UUID,
     shop_name: str,
     shop_type: str = "General",
-    description: str | None = None,
+  
     address: str | None = None,
-    business_phone_number: str | None = None,
+    phone_number: str | None = None,
+    alternate_phone_number: str | None = None,
     currency: str = "UGX",
 ):
     shop = Shop(
         shop_name=shop_name,
         shop_type=shop_type,
-        description=description,
+     
         address=address,
-        business_phone_number=business_phone_number,
+        phone_number=phone_number,
+        alternate_phone_number=alternate_phone_number,
         currency=currency,
         owner_id=owner_id,
     )
