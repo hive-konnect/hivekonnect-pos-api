@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, utils
 from sqlalchemy.orm import Session
 
 from src.auth.dependencies import CurrentOwner
@@ -31,6 +31,25 @@ def create_staff(
     )
     return {"staff": staff, "pin": pin}
 
+
+@router.post("/staff/login")
+def staff_login(payload: StaffLoginRequest, db: Session = Depends(get_db)):
+    staff = service.authenticate_staff(
+        db,
+        shop_id=payload.shop_id,
+        pin=payload.pin
+    )
+
+    if not staff:
+        raise HTTPException(status_code=401, detail="Invalid PIN")
+
+    token = utils.create_access_token(staff)
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "requires_pin_change": staff.change_pin_on_login
+    }
 
 @router.get("/shops/{shop_id}/staff", response_model=list[schemas.StaffResponse])
 def get_shop_staff(

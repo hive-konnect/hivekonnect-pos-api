@@ -35,6 +35,17 @@ def create_staff_member(
     db.refresh(staff)
     return staff, pin
 
+def authenticate_user(db: Session, email: str, password: str) -> models.User | None:
+    normalized_email = email.lower().strip()
+    Staff = db.query(models.Staff).filter(models.Staff.email == normalized_email).first()
+    if not Staff:
+        return Exception("Staff not found")
+    if not utils.verify_password(password, Staff.hashed_password):
+        return None
+    return Staff
+
+
+
 
 def list_shop_staff(
     db: Session,
@@ -52,6 +63,8 @@ def list_shop_staff(
 
 def get_staff_member(db: Session, *, staff_id: UUID) -> Staff | None:
     return db.query(Staff).filter(Staff.id == staff_id).first()
+
+
 
 
 def reset_staff_pin(db: Session, *, staff: Staff) -> tuple[Staff, str]:

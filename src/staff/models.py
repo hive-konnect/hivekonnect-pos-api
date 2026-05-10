@@ -19,6 +19,8 @@ class Staff(Base):
     phone = Column(String(20), nullable=True)
     pin_hash = Column(String, nullable=False)
 
+    change_pin_on_login = Column(Boolean, nullable=False, server_default=text("true"))
+
     is_active = Column(Boolean, server_default=text("true"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
